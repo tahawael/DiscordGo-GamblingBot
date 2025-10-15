@@ -1,6 +1,8 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/yourusername/DiscordGo-GamblingBot"><img src="https://i.ibb.co/Q3FqM6xv/Anime-Casino-Games-A-Fresh-Take-on-Online-Gambling-in-Japan-1.png" alt="DiscordGo GamblingBot" width="600"></a>
+  <a href="https://github.com/yourusername/DiscordGo-GamblingBot" target="_blank">
+    <img src="https://i.ibb.co/Q3FqM6xv/Anime-Casino-Games-A-Fresh-Take-on-Online-Gambling-in-Japan-1.png" alt="DiscordGo GamblingBot" width="600">
+  </a>
   <br>
   DiscordGo GamblingBot
   <br>
@@ -9,16 +11,16 @@
 <h4 align="center">A fun, modular, and fast gambling bot built with DiscordGo.</h4>
 
 <p align="center">
-  <a href="https://discord.com/oauth2/authorize?client_id=1414462464862453791">
+  <a href="https://discord.com/oauth2/authorize?client_id=1414462464862453791" target="_blank">
     <img src="https://img.shields.io/badge/Try%20Bot-5865F2?logo=discord&logoColor=white&style=flat" alt="Add to App's/Servers">
   </a>
-  <a href="https://github.com/bwmarrin/discordgo">
+  <a href="https://github.com/bwmarrin/discordgo" target="_blank">
     <img src="https://img.shields.io/badge/discordgo-library-blue?style=flat" alt="DiscordGo Library">
   </a>
-  <a href="https://golang.org/dl/">
+  <a href="https://golang.org/dl/" target="_blank">
     <img src="https://img.shields.io/badge/Go%20Download-00ADD8?logo=go&logoColor=white&style=flat" alt="Go Download">
   </a>
-  <a href="https://www.mysql.com/">
+  <a href="https://www.mysql.com/" target="_blank">
     <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=flat" alt="MySQL">
   </a>
 </p>
