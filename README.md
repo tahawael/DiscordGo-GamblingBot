@@ -30,10 +30,8 @@
 <p align="center">
   <a href="#-features">Features</a> •
   <a href="#-quick-start">Quick Start</a> •
-  <a href="#%EF%B8%8F-configuration">Configuration</a> •
-  <a href="#-games">Games</a> •
-  <a href="#-commands">Commands</a> •
-  <a href="#-contributing">Contributing</a>
+  <a href="#installation">Installation</a> •
+  <a href="#%EF%B8%8F-configuration">Configuration</a>
 </p>
 
 ---
