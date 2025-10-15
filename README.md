@@ -1,5 +1,5 @@
 
-<h1 align="center">
+<h1 id="top" align="center">
   <a href="https://github.com/yourusername/DiscordGo-GamblingBot" target="_blank">
     <img src="https://i.ibb.co/Q3FqM6xv/Anime-Casino-Games-A-Fresh-Take-on-Online-Gambling-in-Japan-1.png" alt="DiscordGo GamblingBot" width="600">
   </a>
