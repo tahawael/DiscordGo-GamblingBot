@@ -1,23 +1,53 @@
-# DiscordGo-GamblingBot
+<h1 align="center">
+  <br>
+  <a href="https://github.com/yourusername/DiscordGo-GamblingBot"><img src="https://i.ibb.co/Q3FqM6xv/Anime-Casino-Games-A-Fresh-Take-on-Online-Gambling-in-Japan-1.png" alt="DiscordGo GamblingBot" width="600"></a>
+  <br>
+  DiscordGo GamblingBot
+  <br>
+</h1>
+
+<h4 align="center">A fun, modular, and fast gambling bot built with DiscordGo.</h4>
+
+<p align="center">
+  <a href="https://discord.com/oauth2/authorize?client_id=1414462464862453791">
+    <img src="https://img.shields.io/badge/Try%20Bot-5865F2?logo=discord&logoColor=white&style=flat" alt="Add to App's/Servers">
+  </a>
+  <a href="https://github.com/bwmarrin/discordgo">
+    <img src="https://img.shields.io/badge/discordgo-library-blue?style=flat" alt="DiscordGo Library">
+  </a>
+  <a href="https://golang.org/dl/">
+    <img src="https://img.shields.io/badge/Go%20Download-00ADD8?logo=go&logoColor=white&style=flat" alt="Go Download">
+  </a>
+  <a href="https://www.mysql.com/">
+    <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=flat" alt="MySQL">
+  </a>
+</p>
+
+
+
+<p align="center">
+  <a href="#overview">Overview</a>
+  •
+  <a href="#features">Features</a>
+  •
+  <a href="#installation--setup">Installation & Setup</a>
+  •
+  <a href="#database-schema">Database Schema</a>
+</p>
+
+## Overview
 
 Gambling bot for Discord, written in Go. It features an economy system, multiple games, and uses a MySQL database to store user data and game history.
 
 ## Features
 
+  -  **Server & User App Support**: Functions both as a server-wide bot and as an app for individual users.
   -  **Economy System**: Users have balances, can earn money, and transfer funds.
   -  **Multiple Games**: Currently Includes Mines and Slots.
   -  **Persistent Stats**: Tracks user wins, losses, and game history.
   -  **Daily Rewards**: Users can claim a daily reward with a streak system.
   -  **Admin Controls**: Includes basic admin functionality like banning users.
   -  **Web Dashboard**: A simple dashboard to view bot statistics.
-
------
-
-## Tech Stack
-
-  - **Language**: [Go](https://golang.org/)
-  - **Database**: [MySQL](https://www.mysql.com/)
-  - **Discord Library**: [discordgo](https://github.com/bwmarrin/discordgo)
 
 -----
 
