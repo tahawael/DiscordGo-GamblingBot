@@ -9,7 +9,7 @@
 </h1>
 
 <p align="center">
-  <strong>A fun, modular, and blazingly fast gambling bot built with DiscordGo</strong>
+  <strong>A fun, modular, and fast gambling bot built with DiscordGo</strong>
 </p>
 
 <p align="center">
