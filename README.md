@@ -1,5 +1,5 @@
+
 <h1 align="center">
-  <br>
   <a href="https://github.com/yourusername/DiscordGo-GamblingBot" target="_blank">
     <img src="https://i.ibb.co/Q3FqM6xv/Anime-Casino-Games-A-Fresh-Take-on-Online-Gambling-in-Japan-1.png" alt="DiscordGo GamblingBot" width="600">
   </a>
@@ -8,119 +8,156 @@
   <br>
 </h1>
 
-<h4 align="center">A fun, modular, and fast gambling bot built with DiscordGo.</h4>
+<p align="center">
+  <strong>A fun, modular, and blazingly fast gambling bot built with DiscordGo</strong>
+</p>
 
 <p align="center">
   <a href="https://discord.com/oauth2/authorize?client_id=1414462464862453791" target="_blank">
-    <img src="https://img.shields.io/badge/Try%20Bot-5865F2?logo=discord&logoColor=white&style=flat" alt="Add to App's/Servers">
+    <img src="https://img.shields.io/badge/Try%20Bot-5865F2?logo=discord&logoColor=white&style=flat" alt="Add to Discord">
   </a>
   <a href="https://github.com/bwmarrin/discordgo" target="_blank">
-    <img src="https://img.shields.io/badge/discordgo-library-blue?style=flat" alt="DiscordGo Library">
+    <img src="https://img.shields.io/badge/discordgo-library-blue?style=flat" alt="DiscordGo">
   </a>
   <a href="https://golang.org/dl/" target="_blank">
-    <img src="https://img.shields.io/badge/Go%20Download-00ADD8?logo=go&logoColor=white&style=flat" alt="Go Download">
+    <img src="https://img.shields.io/badge/Go-1.18+-00ADD8?logo=go&logoColor=white&style=flat" alt="Go Version">
   </a>
   <a href="https://www.mysql.com/" target="_blank">
-    <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=flat" alt="MySQL">
+    <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?logo=mysql&logoColor=white&style=flat" alt="MySQL">
   </a>
 </p>
 
-
-
 <p align="center">
-  <a href="#overview">Overview</a>
-  •
-  <a href="#features">Features</a>
-  •
-  <a href="#installation--setup">Installation & Setup</a>
-  •
-  <a href="#database-schema">Database Schema</a>
+  <a href="#-features">Features</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#%EF%B8%8F-configuration">Configuration</a> •
+  <a href="#-games">Games</a> •
+  <a href="#-commands">Commands</a> •
+  <a href="#-contributing">Contributing</a>
 </p>
 
-## Overview
+---
 
-Gambling bot for Discord, written in Go. It features an economy system, multiple games, and uses a MySQL database to store user data and game history.
+## 📖 Overview
 
-## Features
+A feature-rich Discord gambling bot written in Go, offering an immersive casino experience right in your Discord server. Built with performance and modularity in mind, it features a complete economy system, multiple casino games, persistent player statistics, and a web dashboard for monitoring.
 
-  -  **Server & User App Support**: Functions both as a server-wide bot and as an app for individual users.
-  -  **Economy System**: Users have balances, can earn money, and transfer funds.
-  -  **Multiple Games**: Currently Includes Mines and Slots.
-  -  **Persistent Stats**: Tracks user wins, losses, and game history.
-  -  **Daily Rewards**: Users can claim a daily reward with a streak system.
-  -  **Admin Controls**: Includes basic admin functionality like banning users.
-  -  **Web Dashboard**: A simple dashboard to view bot statistics.
+## ✨ Features
 
------
+### 🎮 Core Functionality
+- **Dual Mode Support**: Works as both a server-wide bot and individual user application
+- **Complete Economy System**: Full balance management with earnings, transfers, and transaction history
+- **Multiple Casino Games**: Mines, Slots, and more coming soon
+- **Persistent Statistics**: Comprehensive tracking of wins, losses, and gameplay history
+- **Daily Rewards System**: Claim daily rewards with an engaging streak multiplier system
 
-## Installation & Setup
+### 🛡️ Administration & Security
+- **Admin Controls**: Comprehensive moderation tools including user banning
+- **Transaction Logging**: Complete audit trail of all financial activities
+- **Database-Backed**: Reliable MySQL persistence for all user data
 
-Follow these steps to get the bot up and running.
+### 📊 Web Dashboard
+- **Real-time Statistics**: Monitor bot performance and usage
+- **User Analytics**: View player counts, game statistics, and economy health
+- **Access via**: `http://localhost:8080` (configurable)
 
-### 1\. Prerequisites
+---
 
-  - Go (version 1.18 or higher)
-  - MySQL Server
+## 🚀 Quick Start
 
-### 2\. Clone Repository
+### Prerequisites
 
-```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+Before you begin, ensure you have the following installed:
+
+- **Go** (version 1.18 or higher) - [Download here](https://golang.org/dl/)
+- **MySQL Server** (version 8.0 or higher) - [Download here](https://dev.mysql.com/downloads/mysql/)
+- **Discord Bot Token** - [Create one here](https://discord.com/developers/applications)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/DiscordGo-GamblingBot.git
+   cd DiscordGo-GamblingBot
+   ```
+
+2. **Install dependencies**
+   ```bash
+   go mod tidy
+   ```
+
+3. **Set up your MySQL database**
+   ```sql
+   CREATE DATABASE discord_gambling_bot;
+   ```
+
+4. **Configure environment variables**
+   
+   Create a `.env` file or set environment variables:
+   ```bash
+   export gamblingBotToken="your_discord_bot_token_here"
+   export dbPath="username:password@tcp(localhost:3306)/discord_gambling_bot"
+   ```
+
+5. **Initialize database tables**
+   
+   On first run, uncomment this line in `main.go`:
+   ```go
+   if err := setupTables(db); err != nil {
+       log.Fatal("Failed to setup tables:", err)
+   }
+   ```
+   
+   After the first successful run, you can comment it out again.
+
+6. **Run the bot**
+   ```bash
+   go run .
+   ```
+
+---
+
+## ⚙️ Configuration
+
+### Required Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `gamblingBotToken` | Your Discord bot token | `MTIzNDU2Nzg5...` |
+| `dbPath` | MySQL connection string | `root:password@tcp(127.0.0.1:3306)/discord_bot` |
+
+### Code Configuration
+
+#### Guild/Server IDs
+
+Update these values in the source code to match your Discord server setup:
+
+**In `slash.go`:**
+```go
+GuildIDs: []string{
+    "YOUR_SERVER_ID_HERE",
+},
 ```
 
-### 3\. Database Setup
+**In `slot.go`:**
+```go
+guildIDs := []string{
+    "YOUR_SERVER_ID_HERE", // Server where custom emojis are hosted
+}
+```
 
-1.  Create a new database in your MySQL server.
+> **Note**: The bot must be a member of any servers listed in `slot.go` for custom slot emojis/GIFs to work properly.
 
-2.  The bot is designed to create the necessary tables automatically. In `main.go`, uncomment the call to `setupTables(db)` to initialize your database on the first run.
+---
 
-    ```go
-    // main.go
+## 🗄️ Database Schema
 
-    // ...
-    log.Println("Database connected successfully")
+The bot automatically creates the following tables on first run:
 
-    // only run when setting up the db
-    if err := setupTables(db); err != nil {
-     log.Fatal("Failed to setup tables:", err)
-    }
-    // ...
-    ```
+<details>
+<summary><strong>Click to expand database schema</strong></summary>
 
-### 4\. Configuration
-
-You need to set two environment variables for the bot to connect to Discord and your database.
-
-  - `gamblingBotToken`: Your Discord bot token.
-  - `dbPath`: Your MySQL connection string.
-      - *Format*: `user:password@tcp(host:port)/dbname`
-      - *Example*: `root:password@tcp(127.0.0.1:3306)/discord_bot`
-
-You also need to update the Guild (Server) IDs in the source code:
-
-  - In `slash.go`, update `GuildIDs` with your Discord server ID(s) for registering slash commands. (Optional if using global commands)
-  - In `slot.go`, update `guildIDs` with the server ID(s) where custom slot GIFs/emojis are hosted. The bot must be a member of these servers.
-
-### 5\. Run the Bot
-
-1.  Install the required Go modules:
-    ```bash
-    go mod tidy
-    ```
-2.  Run the application:
-    ```bash
-    go run .
-    ```
-
------
-
-## Database Schema
-
-<details> <summary>Click to view MySQL Schemas</summary>
-  
-**Users**
-
+### Users Table
 ```sql
 CREATE TABLE IF NOT EXISTS users (
     userid BIGINT UNSIGNED PRIMARY KEY,
@@ -133,13 +170,12 @@ CREATE TABLE IF NOT EXISTS users (
 );
 ```
 
-**Active Games**
-
+### Active Games Table
 ```sql
 CREATE TABLE IF NOT EXISTS active_games (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    userid BIGINT UNSIGNED ,
-    type VARCHAR(32) NOT NULL ,
+    userid BIGINT UNSIGNED,
+    type VARCHAR(32) NOT NULL,
     username VARCHAR(32) NOT NULL,
     bet_amount DECIMAL(10,2) NOT NULL,
     num_mines INT NOT NULL,
@@ -157,8 +193,7 @@ CREATE TABLE IF NOT EXISTS active_games (
 );
 ```
 
-**Game History**
-
+### Game History Table
 ```sql
 CREATE TABLE IF NOT EXISTS games (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -171,8 +206,7 @@ CREATE TABLE IF NOT EXISTS games (
 );
 ```
 
-**Transactions**
-
+### Transactions Table
 ```sql
 CREATE TABLE IF NOT EXISTS transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -188,8 +222,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 ```
 
-**Daily Rewards**
-
+### Daily Rewards Table
 ```sql
 CREATE TABLE IF NOT EXISTS daily_rewards (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -202,4 +235,61 @@ CREATE TABLE IF NOT EXISTS daily_rewards (
     UNIQUE(userid, claim_date)
 );
 ```
+
 </details>
+
+---
+
+## 🌐 Web Dashboard
+
+Access the web dashboard at `http://localhost:8080` (default port) to view:
+
+- Total users and active players
+- Game statistics and popular games
+- Economic health metrics
+- Recent transactions
+- System performance
+
+To change the dashboard port, modify the configuration in `main.go`.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code follows Go best practices and includes appropriate documentation.
+
+---
+
+## 📜 License
+
+This project is licensed under the GPL-3.0 license License - see the LICENSE file for details.
+
+---
+
+## ⚠️ Disclaimer
+
+This bot is for entertainment purposes only. No real money is involved. Please gamble responsibly, even with virtual currency.
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/tahawael/DiscordGo-GamblingBot/issues)
+
+---
+
+<p align="center">
+  Made with ❤️ and Go
+</p>
+
+<p align="center">
+  <a href="#top">Back to top ⬆️</a>
+</p>
