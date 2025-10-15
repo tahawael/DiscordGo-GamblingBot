@@ -38,7 +38,7 @@
 
 ## 📖 Overview
 
-A feature-rich Discord gambling bot written in Go, offering an immersive casino experience right in your Discord server. Built with performance and modularity in mind, it features a complete economy system, multiple casino games, persistent player statistics, and a web dashboard for monitoring.
+A feature-rich Discord gambling bot written in Go. Built with performance and modularity in mind, it features a complete economy system, multiple casino games, persistent player statistics, and a web dashboard for monitoring.
 
 ## ✨ Features
 
