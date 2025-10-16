@@ -48,7 +48,6 @@ func setupTables(db *sql.DB) error {
 			last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			UNIQUE KEY (userid, type),
 			FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE,
-			FOREIGN KEY (id) REFERENCES games(id)
 		)`,
 
 		"games": `CREATE TABLE IF NOT EXISTS games (
@@ -180,3 +179,4 @@ func main() {
 	defer db.Close()
 	defer dg.Close()
 }
+
