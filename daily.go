@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
@@ -16,26 +17,27 @@ type DailyReward struct {
 	RewardAmount float64
 }
 
-// getRewardAmount returns a random reward amount based on streak
-func getRewardAmount(streak int) float64 {
-	switch streak {
-	case 1:
-		return float64(rand.Intn(1000) + 1000) // 1k-2k
-	case 2:
-		return float64(rand.Intn(1000) + 2000) // 2k-3k
-	case 3:
-		return float64(rand.Intn(1000) + 3000) // 3k-4k
-	case 4:
-		return float64(rand.Intn(1000) + 4000) // 4k-5k
-	case 5:
-		return float64(rand.Intn(5000) + 5000) // 5k-10k
-	case 6:
-		return float64(rand.Intn(40000) + 10000) // 10k-50k
-	case 7:
-		return float64(rand.Intn(50000) + 50000) // 50k-100k
-	default:
-		return float64(rand.Intn(1000) + 1000)
+var (
+	Min float64 // set to true for production (global commands)
+	Max float64 // set to true for production (global commands)
+)
+
+// getRewardInfo returns the min, max, and a random actual reward for a streak.
+func getRewardInfo(streak int) (reward float64) {
+
+	if streak < 1 {
+		streak = 1
 	}
+
+	// Base reward grows slowly with streak
+	base := 1000.0 * math.Pow(float64(streak), 1.5) // exponential growth with diminishing returns
+	spread := base * 0.5                            // random spread ±50%
+
+	Min = math.Max(base-spread, 500) // minimum reward floor
+	Max = base + spread
+
+	reward = Min + rand.Float64()*(Max-Min)
+	return
 }
 
 // ClaimDailyReward processes a daily reward claim
@@ -73,22 +75,19 @@ func ClaimDailyReward(db *sql.DB, userID string) (*DailyReward, error) {
 	if err == nil {
 		if lastClaimDate == yesterday {
 			streak = lastStreak + 1
-			if streak > 7 {
-				streak = 1
-			}
 		}
 	} else if err != sql.ErrNoRows {
 		return nil, err
 	}
 
 	// Calculate reward
-	rewardAmount := getRewardAmount(streak)
+	award := getRewardInfo(streak)
 
 	// Insert reward claim
 	_, err = tx.Exec(`
 		INSERT INTO daily_rewards (userid, claim_date, streak, reward_amount)
 		VALUES (?, ?, ?, ?)
-	`, userID, today, streak, rewardAmount)
+	`, userID, today, streak, award)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +97,7 @@ func ClaimDailyReward(db *sql.DB, userID string) (*DailyReward, error) {
 		UPDATE users 
 		SET balance = balance + ? 
 		WHERE userid = ?
-	`, rewardAmount, userID)
+	`, award, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -111,147 +110,121 @@ func ClaimDailyReward(db *sql.DB, userID string) (*DailyReward, error) {
 		UserID:       userID,
 		ClaimDate:    time.Now(),
 		Streak:       streak,
-		RewardAmount: rewardAmount,
+		RewardAmount: award,
 	}, nil
 }
 
-// GetCurrentStreak returns the user's current streak
+// GetCurrentStreak returns the user's current streak based on last claim
 func GetCurrentStreak(db *sql.DB, userID string) (int, error) {
-	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
-	today := time.Now().Format("2006-01-02")
-
 	var streak int
 	var lastClaimDate string
+
 	err := db.QueryRow(`
-		SELECT streak, claim_date 
-		FROM daily_rewards 
-		WHERE userid = ? 
-		ORDER BY claimed_at DESC 
+		SELECT streak, claim_date
+		FROM daily_rewards
+		WHERE userid = ?
+		ORDER BY claimed_at DESC
 		LIMIT 1
 	`, userID).Scan(&streak, &lastClaimDate)
 
 	if err == sql.ErrNoRows {
-		return 0, nil
+		return 0, nil // No streak yet
 	}
 	if err != nil {
 		return 0, err
 	}
 
-	// Streak is valid if claimed today or yesterday
-	if lastClaimDate == today || lastClaimDate == yesterday {
+	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+	today := time.Now().Format("2006-01-02")
+
+	// Continue streak if last claim was yesterday
+	if lastClaimDate == yesterday {
+		return streak, nil
+	}
+	// If claimed today, streak stays the same
+	if lastClaimDate == today {
 		return streak, nil
 	}
 
-	return 0, nil // Streak broken
+	// Missed a day — reset streak
+	return 0, nil
 }
 
-// HandleDailyCommand handles the /daily slash command
+// HandleDailyCommand handles the /daily command
 func HandleDailyCommand(s *discordgo.Session, i *discordgo.InteractionCreate, db *sql.DB, userID string) {
-	// userID := parseUserID(i.Member.User.ID)
 	currentStreak, _ := GetCurrentStreak(db, userID)
 
-	// Check if already claimed today
 	today := time.Now().Format("2006-01-02")
 	var exists int
-	err := db.QueryRow("SELECT 1 FROM daily_rewards WHERE userid = ? AND claim_date = ?", userID, today).Scan(&exists)
+	err := db.QueryRow(`
+	SELECT 1 FROM daily_rewards
+	WHERE userid = ? AND claim_date = ?
+	`, userID, today).Scan(&exists)
+
 	alreadyClaimed := (err == nil)
 
-	var nextDay int
-	if alreadyClaimed {
-		// User already claimed today, next claimable day is tomorrow
-		nextDay = currentStreak + 1
-	} else {
-		// User has not claimed today
-		if currentStreak == 0 {
-			nextDay = 1
-		} else {
-			nextDay = currentStreak + 1
-		}
-	}
-
-	if nextDay > 7 {
+	// Determine next claimable day
+	nextDay := currentStreak + 1
+	if currentStreak == 0 {
 		nextDay = 1
 	}
 
-	msg := "🎁 **Daily Rewards**\n\nClaim your rewards each day to build your streak!"
+	msg := "**Daily Rewards**\nClaim your rewards each day to build your streak!"
 
-	// Reward info for each day
-	rewards := []string{
-		"($1K-2K)",
-		"($2K-3K)",
-		"($3K-4K)",
-		"($4K-5K)",
-		"($5K-10K)",
-		"($10K-50K)",
-		"($50K-100K)",
+	var style discordgo.ButtonStyle
+	var disabled bool
+	var emoji string
+
+	if alreadyClaimed {
+		style = discordgo.SuccessButton
+		disabled = true
+		emoji = "🔒"
+	} else {
+		style = discordgo.PrimaryButton
+		disabled = false
+		emoji = "🎁"
 	}
 
-	// Create 7 buttons
-	row1 := []discordgo.MessageComponent{}
-	row2 := []discordgo.MessageComponent{}
+	getRewardInfo(nextDay)
+	btn := discordgo.Button{
+		Label: fmt.Sprintf("Streak %d\n$%.2f-$%.2f", nextDay, Min, Max),
 
-	for day := 1; day <= 7; day++ {
-		var style discordgo.ButtonStyle
-		var disabled bool
-		var emoji string
-
-		if day < nextDay || (alreadyClaimed && day == currentStreak) {
-			// Already claimed
-			style = discordgo.SuccessButton
-			disabled = true
-			emoji = "✅"
-		} else if day == nextDay && !alreadyClaimed {
-			// Claimable today
-			style = discordgo.SuccessButton
-			disabled = false
-			emoji = "🎁"
-		} else {
-			// Future days
-			style = discordgo.SecondaryButton
-			disabled = true
-			emoji = "🔒"
-		}
-
-		btn := discordgo.Button{
-			Label:    fmt.Sprintf("Day %d\n%s", day, rewards[day-1]),
-			Style:    style,
-			CustomID: fmt.Sprintf("daily_claim_%d", day),
-			Disabled: disabled,
-			Emoji: &discordgo.ComponentEmoji{
-				Name: emoji,
-			},
-		}
-
-		if day <= 4 {
-			row1 = append(row1, btn)
-		} else {
-			row2 = append(row2, btn)
-		}
+		Style:    style,
+		CustomID: fmt.Sprintf("daily_claim_%d", nextDay),
+		Disabled: disabled,
+		Emoji: &discordgo.ComponentEmoji{
+			Name: emoji,
+		},
 	}
 
-	components := []discordgo.MessageComponent{
-		discordgo.ActionsRow{Components: row1},
-		discordgo.ActionsRow{Components: row2},
+	row := discordgo.ActionsRow{
+		Components: []discordgo.MessageComponent{btn},
 	}
 
-	respondEphemeral(s, i, msg, components)
+	respondEphemeral(s, i, msg, []discordgo.MessageComponent{row})
 }
 
-// HandleDailyClaimButton handles the claim button interaction
+// HandleDailyClaimButton handles when user clicks the "Claim" button
 func HandleDailyClaimButton(s *discordgo.Session, i *discordgo.InteractionCreate, db *sql.DB, userID string) {
-
 	reward, err := ClaimDailyReward(db, userID)
 	if err != nil {
 		if err.Error() == "already claimed today" {
-			nextClaim := time.Now().AddDate(0, 0, 1)
-			nextClaim = time.Date(nextClaim.Year(), nextClaim.Month(), nextClaim.Day(), 0, 0, 0, 0, nextClaim.Location())
+			nextClaim := time.Date(
+				time.Now().Year(),
+				time.Now().Month(),
+				time.Now().Day()+1,
+				0, 0, 0, 0,
+				time.Now().Location(),
+			)
+
 			timeUntil := time.Until(nextClaim)
 			hours := int(timeUntil.Hours())
 			minutes := int(timeUntil.Minutes()) % 60
 
-			msg := fmt.Sprintf("⏰ **Already Claimed!**\n\n"+
-				"You've already claimed your daily reward today.\n"+
-				"Come back in **%dh %dm** to claim again!", hours, minutes)
+			msg := fmt.Sprintf(
+				"⏰ **Already Claimed!**\n\nYou've already claimed your daily reward today.\nCome back in **%dh %dm** to claim again!",
+				hours, minutes,
+			)
 
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -274,62 +247,24 @@ func HandleDailyClaimButton(s *discordgo.Session, i *discordgo.InteractionCreate
 	}
 
 	// Success message
-	msg := fmt.Sprintf("✅ **Daily Reward Claimed!**\n\n"+
-		"🔥 Streak: **Day %d**\n"+
-		"💰 Reward: **$%.2f**\n\n"+
-		"Come back tomorrow to continue your streak!", reward.Streak, reward.RewardAmount)
+	msg := fmt.Sprintf(
+		"✅ **Daily Reward Claimed!**\n\n🔥 Streak: **Day %d**\n💰 Reward: **$%.2f**\n\nCome back tomorrow to continue your streak!",
+		reward.Streak,
+		reward.RewardAmount,
+	)
 
-	if reward.Streak == 7 {
-		msg += "\n\n🎉 **Congratulations!** You've completed the 7-day cycle!"
+	btn := discordgo.Button{
+		Label:    fmt.Sprintf("Streak %d", reward.Streak),
+		Style:    discordgo.SuccessButton,
+		CustomID: fmt.Sprintf("daily_claim_%d", reward.Streak),
+		Disabled: true,
+		Emoji: &discordgo.ComponentEmoji{
+			Name: "✅",
+		},
 	}
 
-	// Update the original message with disabled buttons
-	currentStreak := reward.Streak
-	rewards := []string{
-		"1K-2K",
-		"2K-3K",
-		"3K-4K",
-		"4K-5K",
-		"5K-10K",
-		"10K-50K",
-		"50K-100K",
-	}
-
-	row1 := []discordgo.MessageComponent{}
-	row2 := []discordgo.MessageComponent{}
-
-	for day := 1; day <= 7; day++ {
-		var style discordgo.ButtonStyle
-		var emoji string
-
-		if day <= currentStreak {
-			style = discordgo.PrimaryButton
-			emoji = "✅"
-		} else {
-			style = discordgo.SecondaryButton
-			emoji = "🔒"
-		}
-
-		btn := discordgo.Button{
-			Label:    fmt.Sprintf("Day %d\n%s", day, rewards[day-1]),
-			Style:    style,
-			CustomID: fmt.Sprintf("daily_claim_%d", day),
-			Disabled: true,
-			Emoji: &discordgo.ComponentEmoji{
-				Name: emoji,
-			},
-		}
-
-		if day <= 4 {
-			row1 = append(row1, btn)
-		} else {
-			row2 = append(row2, btn)
-		}
-	}
-
-	components := []discordgo.MessageComponent{
-		discordgo.ActionsRow{Components: row1},
-		discordgo.ActionsRow{Components: row2},
+	row := discordgo.ActionsRow{
+		Components: []discordgo.MessageComponent{btn},
 	}
 
 	// Update original message
@@ -337,11 +272,11 @@ func HandleDailyClaimButton(s *discordgo.Session, i *discordgo.InteractionCreate
 		Type: discordgo.InteractionResponseUpdateMessage,
 		Data: &discordgo.InteractionResponseData{
 			Content:    "🎁 **Daily Rewards**\n\nClaim your rewards each day to build your streak!",
-			Components: components,
+			Components: []discordgo.MessageComponent{row},
 		},
 	})
 
-	// Send success message as follow-up
+	// Follow-up confirmation
 	s.FollowupMessageCreate(i.Interaction, true, &discordgo.WebhookParams{
 		Content: msg,
 		Flags:   discordgo.MessageFlagsEphemeral,
